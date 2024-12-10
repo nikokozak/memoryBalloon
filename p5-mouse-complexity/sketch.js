@@ -57,7 +57,7 @@ function setPhrase() {
     const index = floor(random(0, phrases.length));
     used.push(phrases[index]);
     p.textContent = phrases[index];
-    phrases = phrases.slice(index,1);
+    phrases.splice(index,1);
 
     if(phrases.length == 0) {
         phrases = used;
@@ -82,17 +82,17 @@ function draw() {
 
     smoothScore = smoothScore*0.9 + output.score*0.1;
     
-    window.notice.style.setProperty('opacity', map(smoothScore, 0, 50, 0, 1, true));
+    //window.notice.style.setProperty('opacity', map(smoothScore, 0, 50, 0, 1, true));
 
     if(!animating){
-        if( output.score > 30 && !p.classList.contains('shifting')) {
+        if( output.score > 40 && !p.classList.contains('shifting')) {
             p.classList.add('shifting');
             animating = true;
             jQuery(p).one( 'transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd', function(){
                 setPhrase();
                 animating = false;
             });
-        }else if(output.score <= 30 && abs(output.currentPressure - baseline) < 1 && p.classList.contains('shifting')) {
+        }else if(output.score <= 40 && abs(output.currentPressure - baseline) < 1 && p.classList.contains('shifting')) {
             p.classList.remove('shifting');
             animating = true;
             jQuery(p).one( 'transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd', function(){

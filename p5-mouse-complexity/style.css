@@ -91,5 +91,11 @@ img {
     width: 100%;
     z-index: 0;
     background-color: rgb(225, 2, 2);
+    opacity: 0;
     /* background: radial-gradient(circle, rgba(255, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 50%); */
 }
+
+/* Turn on to flip the visualization (to place the screen the other way around) */
+/* body {
+    transform: rotate(180deg);
+} */
