@@ -1,5 +1,11 @@
 # memoryBalloon
 
+## TODO
+- Decide on interaction "categories"
+- Compile phrases
+- Draw system
+
+
 - Slides
     - Contextual info
     - Sketches

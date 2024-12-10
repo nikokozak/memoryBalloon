@@ -17,6 +17,9 @@ let weightedScore = 0;
 let baselineArr = [];
 let baseline = -1;
 
+//The numerator (rate) at which the score value falls
+const decay = 1.007;
+
 function setup() {
     createCanvas(400, 400);
     textAlign(CENTER);
@@ -53,13 +56,21 @@ function processInput(data) {
         return;
     }
 
+    //Get average of the history
     const average =  history.reduce((partialSum, a) => partialSum + a, 0)/history.length;
+    //Get average of last few inputs
     const trend = history.slice(0, trendSize).reduce((partialSum, a) => partialSum + a, 0)/trendSize;
 
+    //Get recent rate of change
     const score = abs(trend - average);
 
-    const weight = map(score, 0, 100, 0.005, 1, true);
-    weightedScore = weightedScore*(1-weight) + score*weight;
+    //If the score is high, update the weighted score
+    if( score > weightedScore ) {
+        weightedScore = score;
+    } else {
+        //else, let the weighted score decay
+        weightedScore /= decay;
+    }
 
     return weightedScore;
 }
