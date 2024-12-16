@@ -33,6 +33,12 @@ let dataSampleAvg, dataSampleTrend;
 
 // Holds our drawable objects.
 let tokens = [];
+let centerTokens = [];
+
+let tR = [];
+let tL = [];
+let bL = [];
+let bR = [];
 
 // Data input gets assigned to this var.
 let inData = 0;
@@ -41,6 +47,7 @@ let baseline = 0;
 let portButton;
 
 let rot = 0;
+let zoom = 0;
 
 let pressing = 0;
 let zoomTarget = {x: 0, y: 0};
@@ -62,9 +69,25 @@ function setup() {
   perspective(0.3, 1);
 
   // Add metadata to our sentences and push into our tokens array.
-  for (let sentence of sentences) {
-    let token = tokenize(sentence);
+  for (let [idx, sentence] of sentences.entries()) {
+    let token = tokenize(sentence, idx);
+    let centerToken = tokenize(sentence, idx, true);
     tokens.push(token);
+    switch (randomInt(4)) {
+      case 0:
+        tL.push(token);
+        break;
+      case 1:
+        tR.push(token);
+        break;
+      case 2:
+        bL.push(token);
+        break;
+      case 3:
+        bR.push(token);
+        break;
+    }
+    centerTokens.push(centerToken);
   }
 
   if (!navigator.serial) {
@@ -76,18 +99,29 @@ function setup() {
 }
 
 function draw() {
+  background(0);
+
+  //Debug
+  if (frameCount % 30 == 0) {
+    console.log(zoom);
+    console.log(tokens[0]);
+  }
+
   push();
+
+  // Flip screen
   if (FLIPPED) {
     angleMode(DEGREES);
     rotate(180);
   }
-  background(0);
 
+  // MouseX becomes inData if in Mouse mode.
   if (MOUSEINPUT) {
     inData = mouseX;
     if (!baseline) { baseline = inData; }
   }
-  
+ 
+  // Fill sample array and baseline sample array with initial values.
   populateInitDataSamples(dataSamples);
   populateInitDataSamples(baselineSamples);
  
@@ -101,29 +135,23 @@ function draw() {
       console.log(`Created a new baseline at ${baseline} previous was ${prevBaseline}`)
     }
   }
+
+  // Add a data sample to our smoothing array, and calculate avg/trend
   addDataSample(dataSamples);
   dataSampleAvg = calcDataSampleAverage(dataSamples);
   dataSampleTrend = calcDataSamplePortionAverage(dataSamples, 0, dataTrendSampleSize);
-  
-  //const zoom = map(dataSampleAvg, baseline, baseline + 20, zoomEnd, zoomInit, true);
-  //const zoom = map(mouseX, 0, width, zoomInit, zoomEnd, true);
-
-  const zoom = 
+ 
+  // Calculate zoom amount  
+  zoom = 
     MOUSEINPUT ? 
     map(mouseX, 0, width, zoomInit, zoomEnd, true) : 
     map(dataSampleAvg, baseline, baseline + 20, zoomEnd, zoomInit, true); 
 
   translate(0, 0, zoom);
-  //Rotate around the y with the mouse
-  rot += 0.1;
-  //rotateY(rot);
 
-  //Go through the characters
+  //Go through every token
   for (let i in tokens) {
-    //Counter rotate so they always face the screen
-    //rotateY(-rot);
-    
-    //Adjust opacity depending on word "status".
+    //Adjust opacity depending on token "status".
     fadeInOrOut(tokens[i]);
     
     //Draw them in their 3D position
@@ -131,12 +159,20 @@ function draw() {
     translate(tokens[i].x, tokens[i].y, tokens[i].z);
     drawText(tokens[i]);
     pop();
-    //Undo rotation and translation
-    //rotateY(rot);
-    //translate(-tokens[i].x, -tokens[i].y, -tokens[i].z);
+  }
+
+  //Go through every center token
+  for (let i in centerTokens) {
+    //Adjust opacity depending on token "status".
+    fadeInOrOut(centerTokens[i]);
+    
+    //Draw them in their 3D position
+    push();
+    translate(centerTokens[i].x, centerTokens[i].y, centerTokens[i].z);
+    drawText(centerTokens[i]);
+    pop();
   }
   
-  //translate(0, 0, -zoom);
   pop();
 }
 
@@ -158,28 +194,36 @@ function fadeInOrOut(word) {
       word.timeOff += random(1, 10);
       break
     case 'fadingIn':
-      word.opacity += opacityChangeRate;
-      if (word.opacity >= 255) {
+      word.realOpacity += opacityChangeRate;
+      if (word.realOpacity >= 255) {
         word.status = 'fadedIn';
         word.timeOn = 0;
       }
       break;
     case 'fadingOut':
-      word.opacity -= opacityChangeRate;
-      if (word.opacity <= 0) {
+      word.realOpacity -= opacityChangeRate;
+      if (word.realOpacity <= 0) {
         word.status = 'fadedOut';
         word.timeOff = 0;
       }
   }
+
+  let distToZoom = abs(abs(word.z) - abs(zoom));
+
+  // THIS LINE CALCULATES DIST TO OPACITY
+  word.opacity = map(distToZoom, 2000, width*4, word.realOpacity, 0, true);
+  console.log(distToZoom);
+  console.log(word.opacity);
+  
   
   if (word.status == 'fadedIn') {
     word.status = random(0, 100) < 0.5 ? 'fadingOut' : 'fadedIn';
-    }
+  }
     
   if (word.timeOff > maxTimeOff && word.status == 'fadedOut') {
-      resetWord(word);
-      word.status = 'fadingIn';
-    }
+    resetWord(word);
+    word.status = 'fadingIn';
+  }
 }
 
 /*** Sampling Fns *****/
@@ -208,19 +252,45 @@ function calcDataSamplePortionAverage(sampleArray, init, end) {
   return sum / (end - init);
 }
 
-let xForm = () => random(-width/4, width/4);
-let yForm = () => random(-height/4, height/4);
-let zForm = () => random(-width*8, width);
+//let xForm = () => random(-width/4, width/4);
+let xForm = (center = false) => {
+  if (center) {
+    return random(-width/6, width/6);
+  } else {
+    return randomInt(2) ? -width/4 : width/4;
+  }
+}
+//let yForm = () => random(-height/4, height/4);
+let yForm = (center = false) => {
+  if (center) {
+    return random(-height/4, height/4);
+  } else {
+    return randomInt(2) ? -height/2.5 : height/2.5;
+  }
+}
+let zForm = (idx, center = false) => {
+  if (center) {
+    return random(-width*8, width);
+  } else {
+    return map(idx, 0, sentences.length, -width*14, width, true);
+  }
+  //random(-width*8, width);
+}
 let timeOnForm = () => random(0, maxTimeOn);
 let timeOffForm = () => random(0, maxTimeOff);
 
-function tokenize(entity) {
+function randomInt(max) {
+  return Math.floor(Math.random() * max);
+}
+
+function tokenize(entity, idx = 0, center = false) {
   return {
     word: entity,
-    x: xForm(),
-    y: yForm(),
-    z: zForm(),
+    x: xForm(center),
+    y: yForm(center),
+    z: zForm(idx, center),
     opacity: 255,
+    realOpacity: 255,
     timeOn: timeOnForm(),
     timeOff: timeOffForm(),
     status: "fadedIn"
@@ -230,7 +300,7 @@ function tokenize(entity) {
 function resetWord(word) {
   word.x = xForm();
   word.y = yForm();
-  word.z = zForm();
+  //word.z = zForm();
 }
 
 /****************** SERIAL CALLBACK FUNCTIONS ******************/
