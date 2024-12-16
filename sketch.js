@@ -33,9 +33,6 @@ let inData = 0;
 let baseline = 0;
 let portButton;
 
-let words = sentences.join("").match(/\b(\w+)\b/g);
-let wordMap = [];
-
 let rot = 0;
 
 let pressing = 0;
@@ -60,7 +57,6 @@ function setup() {
   //Initialize the soup with one set of characters
   addSentences();
   addSentences();
-  //addWords();
 
   if (!navigator.serial) {
     alert("WebSerial is not supported in this browser. Try Chrome or MS Edge.");
@@ -69,8 +65,6 @@ function setup() {
   }
   startSerial();
 }
-
-
 
 function draw() {
   push();
@@ -203,23 +197,6 @@ let yForm = () => random(-height/4, height/4);
 let zForm = () => random(-width*8, width);
 let timeOnForm = () => random(0, maxTimeOn);
 let timeOffForm = () => random(0, maxTimeOff);
-
-function addWords() {
-  
-  for (let word of words) {
-    const params = {
-      word: word,
-      x: xForm(),
-      y: yForm(),
-      z: zForm(),
-      opacity: 255,
-      timeOn: timeOnForm(),
-      timeOff: timeOffForm(),
-      status: "fadedIn"
-    };
-    wordMap.push(params);
-  }
-}
 
 function addSentences() {
   
