@@ -10,6 +10,7 @@
 
 // Control our sketch with mouseX instead of incoming serial data.
 const MOUSEINPUT = true;
+const FLIPPED = true;
 
 const serial = new p5.WebSerial();
 const maxTimeOn = 800;
@@ -76,8 +77,10 @@ function setup() {
 
 function draw() {
   push();
-  angleMode(DEGREES);
-  rotate(180);
+  if (FLIPPED) {
+    angleMode(DEGREES);
+    rotate(180);
+  }
   background(0);
 
   if (MOUSEINPUT) {
