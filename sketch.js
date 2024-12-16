@@ -8,48 +8,6 @@
  * to the soup.
  */
 
-const sentences = [
-   "The latex reminds me of skin.",
-    "It looks like skin.",
-    "I like to pinch it.",
-    "It feels like I'm smacking someone.",
-    "I love the materiality of it.",
-    "Canal Rubber Supply is the shit.",
-    "Turns out acrylic is really expensive.",
-    "This doesn't hold air at all.",
-    "It reminds me of a pregnant belly.",
-    "I feel like I need consent to touch it.",
-    "I want to oil it up.",
-    "The pressure sensor is so smooth.",
-    "We did blur better than Olafur.",
-    "This is like analog blur.",
-    "I like that it becomes clear when you're close to the screen.",
-    "What if we fill it up with air?",
-    "We need a latex allergy warning.",
-    "If I push too hard a baby will pop out.",
-    "Should we just put porn on it?",
-    "Go on, you can push harder.",
-    "She really enjoys pinching the balloon.",
-    "Is it normal for it to sound like that?",
-    "What if we put words in it?",
-    "What if we put our conversations about the process in it?",
-    "I like the idea of text.",
-    "People seem to respond well to text.",
-    "Oh, the colors look neat.",
-    "It's like zooming into the world.",
-    "Ideas are blurry.",
-    "Como que the ideas need clarity.",
-    "Esto no sirve.",
-    "I'm not sure if this is good.",
-    "WebGL is weird with blur.",
-    "Maybe we should make OpenFrameworks user friendly.",
-    "Hot Air feels like a good name.",
-    "Let's leave it overnight and see if it loses air.",
-    "It holds air so well.",
-    "I wonder if they'll give us a dark room to show it.",
-    "In Colombia we get parts from wherever we can."
-  ];
-
 const serial = new p5.WebSerial();
 const maxTimeOn = 800;
 const maxTimeOff = 800;
