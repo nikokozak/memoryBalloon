@@ -27,6 +27,9 @@ let dataSamples = new Array(dataSmoothingSampleSize);
 let baselineSamples = new Array(baselineSamplingSize);
 let dataSampleAvg, dataSampleTrend;
 
+// Holds our drawable objects.
+let tokens = [];
+
 // Data input gets assigned to this var.
 let inData = 0;
 // Baseline value from which mapping is calculating.
@@ -103,21 +106,21 @@ function draw() {
   //rotateY(rot);
 
   //Go through the characters
-  for (let i in wordMap) {
+  for (let i in tokens) {
     //Counter rotate so they always face the screen
     //rotateY(-rot);
     
     //Adjust opacity depending on word "status".
-    fadeInOrOut(wordMap[i]);
+    fadeInOrOut(tokens[i]);
     
     //Draw them in their 3D position
     push();
-    translate(wordMap[i].x, wordMap[i].y, wordMap[i].z);
-    drawText(wordMap[i]);
+    translate(tokens[i].x, tokens[i].y, tokens[i].z);
+    drawText(tokens[i]);
     pop();
     //Undo rotation and translation
     //rotateY(rot);
-    //translate(-wordMap[i].x, -wordMap[i].y, -wordMap[i].z);
+    //translate(-tokens[i].x, -tokens[i].y, -tokens[i].z);
   }
   
   //translate(0, 0, -zoom);
@@ -211,7 +214,7 @@ function addSentences() {
       timeOff: timeOffForm(),
       status: "fadedIn"
     };
-    wordMap.push(params);
+    tokens.push(params);
   }
 }
 
