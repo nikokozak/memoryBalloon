@@ -8,6 +8,8 @@
  * to the soup.
  */
 
+const mouseInputP = true;
+
 const serial = new p5.WebSerial();
 const maxTimeOn = 800;
 const maxTimeOff = 800;
@@ -48,18 +50,20 @@ function preload() {
 }
 
 function setup() {
-  let renderer = createCanvas(windowWidth, windowHeight, WEBGL);
+  createCanvas(windowWidth, windowHeight, WEBGL);
   
   blendMode(BLEND);
-  
+
   textFont(font);
   textSize(40);
   textAlign(CENTER, CENTER);
   perspective(0.3, 1);
 
-  //Initialize the soup with one set of characters
-  addSentences();
-  addSentences();
+  // Add metadata to our sentences and push into our tokens array.
+  for (let sentence of sentences) {
+    let token = tokenize(sentence);
+    tokens.push(token);
+  }
 
   if (!navigator.serial) {
     alert("WebSerial is not supported in this browser. Try Chrome or MS Edge.");
@@ -75,14 +79,16 @@ function draw() {
   rotate(180);
   background(0);
   
-  loadInitialDataSamples(dataSamples);
-  loadInitialDataSamples(baselineSamples);
+  populateInitDataSamples(dataSamples);
+  populateInitDataSamples(baselineSamples);
   
-  if (frameCount % (30*60) == 0) {
+  if (frameCount % (1*60) == 0) {
     addDataSample(baselineSamples);
     let baselineSamplesAvg = baselineSamples.reduce((acc, curr) => acc + curr) / baselineSamples.length;
     if (baselineSamples[0] - baselineSamplingDeviation < baselineSamplesAvg && baselineSamples[0] + baselineSamplingDeviation > baselineSamplesAvg) {
+      let prevBaseline = baseline;
       baseline = baselineSamples[0];
+      console.log(`Created a new baseline at ${baseline} previous was ${prevBaseline}`)
     }
     
   }
@@ -98,8 +104,14 @@ function draw() {
     pressing = 0;
   }
   
-  const zoom = map(dataSampleAvg, baseline, baseline + 20, zoomEnd, zoomInit, true);
+  //const zoom = map(dataSampleAvg, baseline, baseline + 20, zoomEnd, zoomInit, true);
   //const zoom = map(mouseX, 0, width, zoomInit, zoomEnd, true);
+
+  const zoom = 
+    mouseInputP ? 
+    map(mouseX, 0, width, zoomInit, zoomEnd, true) : 
+    map(dataSampleAvg, baseline, baseline + 20, zoomEnd, zoomInit, true); 
+
   translate(0, 0, zoom);
   //Rotate around the y with the mouse
   rot += 0.1;
@@ -171,7 +183,7 @@ function fadeInOrOut(word) {
 
 /*** Sampling Fns *****/
 
-function loadInitialDataSamples(sampleArray) {
+function populateInitDataSamples(sampleArray) {
   while (sampleArray[0] == undefined) {
     addDataSample(sampleArray);
   }
@@ -201,30 +213,23 @@ let zForm = () => random(-width*8, width);
 let timeOnForm = () => random(0, maxTimeOn);
 let timeOffForm = () => random(0, maxTimeOff);
 
-function addSentences() {
-  
-  for (let sentence of sentences) {
-    const params = {
-      word: sentence,
-      x: xForm(),
-      y: yForm(),
-      z: zForm(),
-      opacity: 255,
-      timeOn: timeOnForm(),
-      timeOff: timeOffForm(),
-      status: "fadedIn"
-    };
-    tokens.push(params);
-  }
+function tokenize(entity) {
+  return {
+    word: entity,
+    x: xForm(),
+    y: yForm(),
+    z: zForm(),
+    opacity: 255,
+    timeOn: timeOnForm(),
+    timeOff: timeOffForm(),
+    status: "fadedIn"
+  };
 }
 
 function resetWord(word) {
   word.x = xForm();
   word.y = yForm();
   word.z = zForm();
-  //word.timeOn = 0;
-  //word.timeOff = timeOffForm();
-  //word.status = "fadingIn";
 }
 
 /****************** SERIAL CALLBACK FUNCTIONS ******************/
