@@ -21,13 +21,17 @@ const dataTrendSampleSize = 5;
 const baselineSamplingSize = 50;
 const baselineSamplingDeviation = .1;
 
+// Samples used to smooth input
 let dataSamples = new Array(dataSmoothingSampleSize);
+// Samples used to calculate baseline
 let baselineSamples = new Array(baselineSamplingSize);
 let dataSampleAvg, dataSampleTrend;
 
+// Data input gets assigned to this var.
 let inData = 0;
-let portButton;
+// Baseline value from which mapping is calculating.
 let baseline = 0;
+let portButton;
 
 let words = sentences.join("").match(/\b(\w+)\b/g);
 let wordMap = [];
