@@ -8,7 +8,8 @@
  * to the soup.
  */
 
-const mouseInputP = true;
+// Control our sketch with mouseX instead of incoming serial data.
+const MOUSEINPUT = true;
 
 const serial = new p5.WebSerial();
 const maxTimeOn = 800;
@@ -78,10 +79,16 @@ function draw() {
   angleMode(DEGREES);
   rotate(180);
   background(0);
+
+  if (MOUSEINPUT) {
+    inData = mouseX;
+    if (!baseline) { baseline = inData; }
+  }
   
   populateInitDataSamples(dataSamples);
   populateInitDataSamples(baselineSamples);
-  
+ 
+  // This might take a full minute to refresh if pressure changes.
   if (frameCount % (1*60) == 0) {
     addDataSample(baselineSamples);
     let baselineSamplesAvg = baselineSamples.reduce((acc, curr) => acc + curr) / baselineSamples.length;
@@ -90,25 +97,16 @@ function draw() {
       baseline = baselineSamples[0];
       console.log(`Created a new baseline at ${baseline} previous was ${prevBaseline}`)
     }
-    
   }
   addDataSample(dataSamples);
   dataSampleAvg = calcDataSampleAverage(dataSamples);
   dataSampleTrend = calcDataSamplePortionAverage(dataSamples, 0, dataTrendSampleSize);
   
-  
-  if (dataSampleTrend - dataSampleAvg > 10 && pressing == 0) {
-    pressing == 1;
-    zoomTarget = words[Math.floor(random(0, words.length - 1))];
-  } else if (dataSampleTrend - dataSampleAvg < 0 && pressing == 1) {
-    pressing = 0;
-  }
-  
   //const zoom = map(dataSampleAvg, baseline, baseline + 20, zoomEnd, zoomInit, true);
   //const zoom = map(mouseX, 0, width, zoomInit, zoomEnd, true);
 
   const zoom = 
-    mouseInputP ? 
+    MOUSEINPUT ? 
     map(mouseX, 0, width, zoomInit, zoomEnd, true) : 
     map(dataSampleAvg, baseline, baseline + 20, zoomEnd, zoomInit, true); 
 
@@ -296,9 +294,10 @@ let timeoutIndex = null;
 
 function serialEvent() {
   let data = Number(serial.readLine());
-  
+ 
+  // Disregard 0 values
   if (data == 0) { return; }
-  
+ 
   inData = data;
 
   if (!baseline) {
